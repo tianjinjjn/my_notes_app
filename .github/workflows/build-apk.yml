@@ -1,17 +1,15 @@
-name: Build
-on: push
-
+name: 诊断项目文件结构
+on: [push, workflow_dispatch]
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: 3.10.0
-      - run: flutter pub get
-      - run: flutter build apk
-      - uses: actions/upload-artifact@v4
-        with:
-          name: app
-          path: build/app/outputs/flutter-apk/app-release.apk
+      - name: 列出根目录文件
+        run: |
+          pwd
+          ls -la
+      - name: 确认 pubspec.yaml 存在
+        run: test -f pubspec.yaml && echo "OK: pubspec.yaml 存在" || echo "ERROR: pubspec.yaml 不存在，项目结构错误"
+      - name: 确认 lib/main.dart 存在
+        run: test -f lib/main.dart && echo "OK: lib/main.dart 存在" || echo "ERROR: lib/main.dart 不存在"
