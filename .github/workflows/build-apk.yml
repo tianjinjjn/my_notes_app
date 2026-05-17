@@ -1,23 +1,41 @@
 name: Build APK
 on: [push, workflow_dispatch]
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Fix Kotlin version
+
+      - name: 自动修复 Android 编译配置
         run: |
+          # 删除可能冲突的 build.gradle.kts
+          rm -f android/build.gradle.kts android/app/build.gradle.kts
+
+          # 修复 app/build.gradle 的 compileSdk 和 ndkVersion
+          if [ -f android/app/build.gradle ]; then
+            sed -i 's/compileSdk = 33/compileSdk = 34/' android/app/build.gradle
+            sed -i 's/ndkVersion = flutter.ndkVersion/ndkVersion = "28.2.13676358"/' android/app/build.gradle
+            # 如果 compileSdk 还是 33 以外的值，也强制设为 34
+            sed -i 's/compileSdk = [0-9]*/compileSdk = 34/' android/app/build.gradle
+          fi
+
+          # 确保 Kotlin 版本足够高
           if [ -f android/build.gradle ]; then
             sed -i "s/ext.kotlin_version = '.*'/ext.kotlin_version = '1.9.22'/" android/build.gradle
           fi
           if [ -f android/settings.gradle ]; then
             sed -i "s/kotlin_version = '.*'/kotlin_version = '1.9.22'/" android/settings.gradle
           fi
+
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.41.9'
+
       - run: flutter pub get
       - run: flutter build apk --release --android-skip-build-dependency-validation
+
       - uses: actions/upload-artifact@v4
         with:
           name: app-release
