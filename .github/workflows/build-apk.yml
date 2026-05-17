@@ -1,15 +1,12 @@
-name: 诊断项目文件结构
+name: 诊断项目文件
 on: [push, workflow_dispatch]
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: 列出根目录文件
-        run: |
+      - run: |
           pwd
           ls -la
-      - name: 确认 pubspec.yaml 存在
-        run: test -f pubspec.yaml && echo "OK: pubspec.yaml 存在" || echo "ERROR: pubspec.yaml 不存在，项目结构错误"
-      - name: 确认 lib/main.dart 存在
-        run: test -f lib/main.dart && echo "OK: lib/main.dart 存在" || echo "ERROR: lib/main.dart 不存在"
+          test -f pubspec.yaml && echo "OK: pubspec.yaml 存在" || echo "ERROR: pubspec.yaml 不存在"
+          test -f lib/main.dart && echo "OK: lib/main.dart 存在" || echo "ERROR: lib/main.dart 不存在"
