@@ -5,30 +5,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: 查找项目根目录
+      - name: Fix Kotlin version
         run: |
-          if [ -f pubspec.yaml ]; then
-            echo "项目根目录正确"
-          else
-            cd my_notes_app 2>/dev/null || true
-            if [ ! -f pubspec.yaml ]; then
-              echo "错误：找不到 pubspec.yaml"
-              exit 1
-            fi
+          if [ -f android/build.gradle ]; then
+            sed -i "s/ext.kotlin_version = '.*'/ext.kotlin_version = '1.9.22'/" android/build.gradle
           fi
-          
+          if [ -f android/settings.gradle ]; then
+            sed -i "s/kotlin_version = '.*'/kotlin_version = '1.9.22'/" android/settings.gradle
+          fi
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.41.9'
-          
-      - name: 编译 APK
-        run: |
-          cd my_notes_app 2>/dev/null || true
-          flutter pub get
-          flutter build apk --release
-          
+      - run: flutter pub get
+      - run: flutter build apk --release --android-skip-build-dependency-validation
       - uses: actions/upload-artifact@v4
         with:
           name: app-release
-          path: "**/app-release.apk"
+          path: build/app/outputs/flutter-apk/app-release.apk
