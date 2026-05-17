@@ -15,10 +15,8 @@ jobs:
 
           # 修复 app/build.gradle 的 compileSdk 和 ndkVersion
           if [ -f android/app/build.gradle ]; then
-            sed -i 's/compileSdk = 33/compileSdk = 34/' android/app/build.gradle
-            sed -i 's/ndkVersion = flutter.ndkVersion/ndkVersion = "28.2.13676358"/' android/app/build.gradle
-            # 如果 compileSdk 还是 33 以外的值，也强制设为 34
             sed -i 's/compileSdk = [0-9]*/compileSdk = 34/' android/app/build.gradle
+            sed -i 's/ndkVersion = flutter.ndkVersion/ndkVersion = "28.2.13676358"/' android/app/build.gradle
           fi
 
           # 确保 Kotlin 版本足够高
@@ -34,7 +32,8 @@ jobs:
           flutter-version: '3.41.9'
 
       - run: flutter pub get
-      - run: flutter build apk --release --android-skip-build-dependency-validation
+      # 使用 --no-shrink 构建，有时能避开 R8 压缩导致的随机错误
+      - run: flutter build apk --release --no-shrink
 
       - uses: actions/upload-artifact@v4
         with:
